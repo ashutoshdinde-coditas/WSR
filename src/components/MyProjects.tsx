@@ -1,15 +1,6 @@
-import { CheckCircle2, Clock, AlertCircle, ChevronDown, ChevronUp, ClipboardEdit, Mail, X, Send, Paperclip, CalendarClock, History } from 'lucide-react';
+import { CheckCircle2, Clock, AlertCircle, ClipboardEdit, Mail, X, Send, Paperclip, CalendarClock } from 'lucide-react';
 import { Project } from '../App';
 import { useState } from 'react';
-
-interface CheckInHistory {
-  id: string;
-  week: string;
-  date: string;
-  ragStatus: 'red' | 'amber' | 'green';
-  highlights: string;
-  submittedBy: string;
-}
 
 interface MyProjectsProps {
   onViewCheckIn: (project: Project) => void;
@@ -18,28 +9,9 @@ interface MyProjectsProps {
 
 export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [expandedProject, setExpandedProject] = useState<string | null>(null);
   const [emailProject, setEmailProject] = useState<Project | null>(null);
   const [emailBody, setEmailBody] = useState('');
   const [attachments, setAttachments] = useState<string[]>(['Weekly_Status_Report.pdf']);
-
-  // Mock check-in history data
-  const checkInHistory: Record<string, CheckInHistory[]> = {
-    '1': [
-      { id: 'h1', week: 'W49', date: 'Dec 8, 2025', ragStatus: 'green', highlights: 'Completed user authentication module', submittedBy: 'Alex Thompson' },
-      { id: 'h2', week: 'W48', date: 'Dec 1, 2025', ragStatus: 'green', highlights: 'Dashboard design approved by stakeholders', submittedBy: 'Alex Thompson' },
-      { id: 'h3', week: 'W47', date: 'Nov 24, 2025', ragStatus: 'amber', highlights: 'Minor delays in API integration', submittedBy: 'Alex Thompson' },
-    ],
-    '2': [
-      { id: 'h4', week: 'W48', date: 'Dec 1, 2025', ragStatus: 'amber', highlights: 'Design review pending from stakeholders', submittedBy: 'Jordan Lee' },
-      { id: 'h5', week: 'W47', date: 'Nov 24, 2025', ragStatus: 'green', highlights: 'Mobile UI components completed', submittedBy: 'Jordan Lee' },
-    ],
-    '3': [
-      { id: 'h6', week: 'W45', date: 'Nov 10, 2025', ragStatus: 'red', highlights: 'Critical blocker: Database access issues', submittedBy: 'Sarah Chen' },
-      { id: 'h7', week: 'W44', date: 'Nov 3, 2025', ragStatus: 'amber', highlights: 'Data mapping in progress', submittedBy: 'Sarah Chen' },
-      { id: 'h8', week: 'W43', date: 'Oct 27, 2025', ragStatus: 'green', highlights: 'Migration plan approved', submittedBy: 'Sarah Chen' },
-    ],
-  };
 
   // Mock data for currently allocated projects
   const projects: Project[] = [
@@ -193,7 +165,6 @@ Project Manager`);
         <table className="w-full">
           <thead className="bg-gray-100 border-b">
             <tr>
-              <th className="w-10 px-2 py-1.5"></th>
               <th className="text-left px-3 py-1.5 text-sm font-medium">Project Name</th>
               <th className="text-left px-3 py-1.5 text-sm font-medium">Client</th>
               <th className="text-left px-3 py-1.5 text-sm font-medium">Start Date</th>
@@ -208,21 +179,7 @@ Project Manager`);
           </thead>
           <tbody>
             {projects.map((project) => (
-              <>
-              <tr key={project.id} className={`border-b hover:bg-gray-50 ${expandedProject === project.id ? 'bg-blue-50' : ''}`}>
-                <td className="px-2 py-1.5 text-center">
-                  <button
-                    onClick={() => setExpandedProject(expandedProject === project.id ? null : project.id)}
-                    className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                    title="View History"
-                  >
-                    {expandedProject === project.id ? (
-                      <ChevronUp className="w-4 h-4" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" />
-                    )}
-                  </button>
-                </td>
+              <tr key={project.id} className="border-b hover:bg-gray-50">
                 <td 
                   className="px-3 py-1.5 cursor-pointer text-sm font-medium"
                   onClick={() => onViewCheckIn(project)}
@@ -318,50 +275,6 @@ Project Manager`);
                   </button>
                 </td>
               </tr>
-              
-              {/* Expandable History Row */}
-              {expandedProject === project.id && (
-                <tr key={`${project.id}-history`}>
-                  <td colSpan={11} className="bg-slate-50 px-6 py-5 border-b">
-                    <div className="max-w-4xl">
-                      <div className="flex items-center gap-2 mb-4">
-                        <History className="w-4 h-4 text-slate-500" />
-                        <span className="text-sm font-semibold text-slate-700">Check-in History</span>
-                        <span className="text-xs text-slate-400">({checkInHistory[project.id]?.length || 0} entries)</span>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        {checkInHistory[project.id]?.map((history) => (
-                          <div
-                            key={history.id}
-                            className="flex items-center bg-white rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer overflow-hidden"
-                            onClick={() => onViewCheckIn(project)}
-                          >
-                            <div className={`w-1.5 self-stretch ${getRagColor(history.ragStatus)}`} />
-                            <div className="flex items-center gap-6 px-5 py-4 flex-1">
-                              <div className="flex-shrink-0">
-                                <div className="text-sm font-semibold text-slate-700">{history.week}</div>
-                                <div className="text-xs text-slate-400">{history.date}</div>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="text-sm text-slate-600">{history.highlights}</div>
-                              </div>
-                              <div className="flex-shrink-0 text-right">
-                                <div className="text-xs text-slate-400">Submitted by</div>
-                                <div className="text-sm text-slate-600">{history.submittedBy}</div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {(!checkInHistory[project.id] || checkInHistory[project.id].length === 0) && (
-                          <div className="text-sm text-slate-400 italic py-4 text-center">No check-in history available</div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              )}
-              </>
             ))}
           </tbody>
         </table>
