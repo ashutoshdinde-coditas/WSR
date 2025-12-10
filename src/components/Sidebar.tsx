@@ -1,14 +1,14 @@
-import { LayoutDashboard, FolderKanban, Mail, Users, FileText } from 'lucide-react';
+import { FolderKanban, Settings } from 'lucide-react';
 
 interface SidebarProps {
   currentView: string;
-  onNavigate: (view: 'projects' | 'email') => void;
+  onNavigate: (view: 'projects' | 'emailSettings') => void;
 }
 
 export function Sidebar({ currentView, onNavigate }: SidebarProps) {
   const menuItems = [
     { id: 'projects', label: 'Projects', icon: FolderKanban },
-    { id: 'email', label: 'Email', icon: Mail },
+    { id: 'emailSettings', label: 'Email Settings', icon: Settings },
   ];
 
   return (
@@ -30,7 +30,7 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
             return (
               <button
                 key={item.id}
-                onClick={() => onNavigate(item.id as 'projects' | 'email')}
+                onClick={() => onNavigate(item.id as 'projects' | 'emailSettings')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive
                     ? 'bg-blue-50 text-blue-600'

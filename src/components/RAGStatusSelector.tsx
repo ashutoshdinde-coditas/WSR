@@ -1,18 +1,24 @@
-import { useState } from 'react';
-import { Info, X } from 'lucide-react';
-
 interface RAGStatusSelectorProps {
   value: 'red' | 'amber' | 'green';
   onChange: (value: 'red' | 'amber' | 'green') => void;
 }
 
 export function RAGStatusSelector({ value, onChange }: RAGStatusSelectorProps) {
-  const [showDescription, setShowDescription] = useState(false);
-
   const ragDescriptions = {
     red: 'Critical issues requiring immediate attention. Project is at risk of significant delays or failure. Escalation needed.',
     amber: 'Some concerns or minor issues present. Project may face delays but is manageable with attention. Close monitoring required.',
     green: 'Project is on track. No significant issues. Progressing as planned within scope, schedule, and budget.'
+  };
+
+  const getDescriptionStyle = (status: 'red' | 'amber' | 'green') => {
+    switch (status) {
+      case 'green':
+        return 'bg-green-50 border-green-200 text-green-800';
+      case 'amber':
+        return 'bg-amber-50 border-amber-200 text-amber-800';
+      case 'red':
+        return 'bg-red-50 border-red-200 text-red-800';
+    }
   };
 
   const getRagColor = (rag: string) => {
@@ -30,50 +36,9 @@ export function RAGStatusSelector({ value, onChange }: RAGStatusSelectorProps) {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-2">
-        <label>RAG Status</label>
-        <button
-          type="button"
-          onClick={() => setShowDescription(!showDescription)}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <Info className="w-4 h-4" />
-        </button>
-      </div>
+      <label className="block mb-2">Health Status</label>
 
-      {showDescription && (
-        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md relative">
-          <button
-            type="button"
-            onClick={() => setShowDescription(false)}
-            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-          >
-            <X className="w-4 h-4" />
-          </button>
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-green-500 flex-shrink-0 mt-1" />
-              <div>
-                <strong>Green:</strong> {ragDescriptions.green}
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-amber-500 flex-shrink-0 mt-1" />
-              <div>
-                <strong>Amber:</strong> {ragDescriptions.amber}
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-red-500 flex-shrink-0 mt-1" />
-              <div>
-                <strong>Red:</strong> {ragDescriptions.red}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="flex gap-4">
+      <div className="flex gap-4 mb-3">
         {(['green', 'amber', 'red'] as const).map((status) => (
           <button
             key={status}
@@ -89,6 +54,11 @@ export function RAGStatusSelector({ value, onChange }: RAGStatusSelectorProps) {
             <span className="capitalize">{status}</span>
           </button>
         ))}
+      </div>
+
+      {/* Description of selected status - always visible */}
+      <div className={`p-3 rounded-md border text-sm ${getDescriptionStyle(value)}`}>
+        <span className="font-medium capitalize">{value}:</span> {ragDescriptions[value]}
       </div>
     </div>
   );

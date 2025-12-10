@@ -1,6 +1,15 @@
-import { CheckCircle2, Clock, ChevronDown } from 'lucide-react';
+import { CheckCircle2, Clock, AlertCircle, ChevronDown, ChevronUp, ClipboardEdit, Mail, X, Send, Paperclip, CalendarClock, History } from 'lucide-react';
 import { Project } from '../App';
 import { useState } from 'react';
+
+interface CheckInHistory {
+  id: string;
+  week: string;
+  date: string;
+  ragStatus: 'red' | 'amber' | 'green';
+  highlights: string;
+  submittedBy: string;
+}
 
 interface MyProjectsProps {
   onViewCheckIn: (project: Project) => void;
@@ -9,6 +18,28 @@ interface MyProjectsProps {
 
 export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [expandedProject, setExpandedProject] = useState<string | null>(null);
+  const [emailProject, setEmailProject] = useState<Project | null>(null);
+  const [emailBody, setEmailBody] = useState('');
+  const [attachments, setAttachments] = useState<string[]>(['Weekly_Status_Report.pdf']);
+
+  // Mock check-in history data
+  const checkInHistory: Record<string, CheckInHistory[]> = {
+    '1': [
+      { id: 'h1', week: 'W49', date: 'Dec 8, 2025', ragStatus: 'green', highlights: 'Completed user authentication module', submittedBy: 'Alex Thompson' },
+      { id: 'h2', week: 'W48', date: 'Dec 1, 2025', ragStatus: 'green', highlights: 'Dashboard design approved by stakeholders', submittedBy: 'Alex Thompson' },
+      { id: 'h3', week: 'W47', date: 'Nov 24, 2025', ragStatus: 'amber', highlights: 'Minor delays in API integration', submittedBy: 'Alex Thompson' },
+    ],
+    '2': [
+      { id: 'h4', week: 'W48', date: 'Dec 1, 2025', ragStatus: 'amber', highlights: 'Design review pending from stakeholders', submittedBy: 'Jordan Lee' },
+      { id: 'h5', week: 'W47', date: 'Nov 24, 2025', ragStatus: 'green', highlights: 'Mobile UI components completed', submittedBy: 'Jordan Lee' },
+    ],
+    '3': [
+      { id: 'h6', week: 'W45', date: 'Nov 10, 2025', ragStatus: 'red', highlights: 'Critical blocker: Database access issues', submittedBy: 'Sarah Chen' },
+      { id: 'h7', week: 'W44', date: 'Nov 3, 2025', ragStatus: 'amber', highlights: 'Data mapping in progress', submittedBy: 'Sarah Chen' },
+      { id: 'h8', week: 'W43', date: 'Oct 27, 2025', ragStatus: 'green', highlights: 'Migration plan approved', submittedBy: 'Sarah Chen' },
+    ],
+  };
 
   // Mock data for currently allocated projects
   const projects: Project[] = [
@@ -16,7 +47,10 @@ export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
       id: '1',
       name: 'Customer Portal Redesign',
       client: 'Acme Corp',
-      status: 'ontime',
+      startDate: 'Sep 1, 2025',
+      endDate: 'Feb 28, 2026',
+      checkInStatus: 'done',
+      projectStatus: 'on-track',
       weekNumber: 'W49',
       month: 'Dec',
       year: '2025',
@@ -26,7 +60,10 @@ export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
       id: '2',
       name: 'Mobile App Development',
       client: 'TechStart Inc',
-      status: 'ontime',
+      startDate: 'Aug 15, 2025',
+      endDate: 'Jan 31, 2026',
+      checkInStatus: 'pending',
+      projectStatus: 'at-risk',
       weekNumber: 'W48',
       month: 'Nov',
       year: '2025',
@@ -36,7 +73,10 @@ export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
       id: '3',
       name: 'Data Migration Project',
       client: 'Global Systems',
-      status: 'delayed',
+      startDate: 'Jul 1, 2025',
+      endDate: 'Dec 31, 2025',
+      checkInStatus: 'overdue',
+      projectStatus: 'off-track',
       weekNumber: 'W45',
       month: 'Nov',
       year: '2025',
@@ -44,12 +84,51 @@ export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
     }
   ];
 
-  const getStatusIcon = (status: string) => {
+  const getCheckInStatusIcon = (status: string) => {
     switch (status) {
-      case 'ontime':
-        return <CheckCircle2 className="w-5 h-5 text-green-600" />;
-      case 'delayed':
-        return <Clock className="w-5 h-5 text-red-600" />;
+      case 'done':
+        return (
+          <div className="flex items-center gap-1 text-green-600" title="Check-in Done">
+            <CheckCircle2 className="w-4 h-4" />
+          </div>
+        );
+      case 'pending':
+        return (
+          <div className="flex items-center gap-1 text-amber-500" title="Check-in Pending">
+            <Clock className="w-4 h-4" />
+          </div>
+        );
+      case 'overdue':
+        return (
+          <div className="flex items-center gap-1 text-red-600" title="Check-in Overdue">
+            <AlertCircle className="w-4 h-4" />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getProjectStatusBadge = (status: string) => {
+    switch (status) {
+      case 'on-track':
+        return (
+          <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+            On Track
+          </span>
+        );
+      case 'at-risk':
+        return (
+          <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
+            At Risk
+          </span>
+        );
+      case 'off-track':
+        return (
+          <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+            Off Track
+          </span>
+        );
       default:
         return null;
     }
@@ -68,100 +147,309 @@ export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
     }
   };
 
+  // Calculate next check-in due date (7 days from now)
+  const getNextDueDate = () => {
+    const today = new Date();
+    const nextDue = new Date(today);
+    nextDue.setDate(today.getDate() + 7);
+    return nextDue.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric'
+    });
+  };
+
+  const openEmailPopup = (project: Project) => {
+    setEmailProject(project);
+    setEmailBody(`Hi Team,
+
+Please find below the weekly status update for ${project.name}.
+
+Project Status: ${project.projectStatus === 'on-track' ? 'On Track' : project.projectStatus === 'at-risk' ? 'At Risk' : 'Off Track'}
+Health Status: ${project.ragStatus.charAt(0).toUpperCase() + project.ragStatus.slice(1)}
+Week: ${project.weekNumber}
+
+Best regards,
+Project Manager`);
+  };
+
+  const handleSendEmail = () => {
+    alert(`Email sent for ${emailProject?.name}!`);
+    setEmailProject(null);
+    setEmailBody('');
+  };
+
+  const removeAttachment = (name: string) => {
+    setAttachments(attachments.filter(a => a !== name));
+  };
+
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl mb-2">My Projects</h1>
-        <p className="text-gray-600">Currently allocated projects</p>
+    <div className="max-w-7xl mx-auto p-4">
+      <div className="mb-4">
+        <h1 className="text-2xl mb-1">My Projects</h1>
+        <p className="text-gray-600 text-sm">Currently allocated projects</p>
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-100 border-b">
             <tr>
-              <th className="text-left px-6 py-4">Project Name</th>
-              <th className="text-left px-6 py-4">Client</th>
-              <th className="text-left px-6 py-4">Status</th>
-              <th className="text-left px-6 py-4">Week</th>
-              <th className="text-left px-6 py-4">RAG Status</th>
-              <th className="text-left px-6 py-4">Actions</th>
+              <th className="w-10 px-2 py-1.5"></th>
+              <th className="text-left px-3 py-1.5 text-sm font-medium">Project Name</th>
+              <th className="text-left px-3 py-1.5 text-sm font-medium">Client</th>
+              <th className="text-left px-3 py-1.5 text-sm font-medium">Start Date</th>
+              <th className="text-left px-3 py-1.5 text-sm font-medium">End Date</th>
+              <th className="text-left px-3 py-1.5 text-sm font-medium">Status</th>
+              <th className="text-center px-3 py-1.5 text-sm font-medium">Check-In</th>
+              <th className="text-left px-3 py-1.5 text-sm font-medium">Next Due</th>
+              <th className="text-center px-3 py-1.5 text-sm font-medium">Health Status</th>
+              <th className="text-center px-3 py-1.5 text-sm font-medium">Actions</th>
+              <th className="text-center px-3 py-1.5 text-sm font-medium">Email</th>
             </tr>
           </thead>
           <tbody>
             {projects.map((project) => (
-              <tr key={project.id} className="border-b hover:bg-gray-50">
+              <>
+              <tr key={project.id} className={`border-b hover:bg-gray-50 ${expandedProject === project.id ? 'bg-blue-50' : ''}`}>
+                <td className="px-2 py-1.5 text-center">
+                  <button
+                    onClick={() => setExpandedProject(expandedProject === project.id ? null : project.id)}
+                    className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                    title="View History"
+                  >
+                    {expandedProject === project.id ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </button>
+                </td>
                 <td 
-                  className="px-6 py-4 cursor-pointer"
+                  className="px-3 py-1.5 cursor-pointer text-sm font-medium"
                   onClick={() => onViewCheckIn(project)}
                 >
                   {project.name}
                 </td>
                 <td 
-                  className="px-6 py-4 cursor-pointer"
+                  className="px-3 py-1.5 cursor-pointer text-sm"
                   onClick={() => onViewCheckIn(project)}
                 >
                   {project.client}
                 </td>
                 <td 
-                  className="px-6 py-4 cursor-pointer"
+                  className="px-3 py-1.5 cursor-pointer text-sm text-gray-600"
                   onClick={() => onViewCheckIn(project)}
                 >
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(project.status)}
-                    <span className="capitalize">{project.status === 'ontime' ? 'On Time' : 'Delayed'}</span>
+                  {project.startDate}
+                </td>
+                <td 
+                  className="px-3 py-1.5 cursor-pointer text-sm text-gray-600"
+                  onClick={() => onViewCheckIn(project)}
+                >
+                  {project.endDate}
+                </td>
+                <td 
+                  className="px-3 py-1.5 cursor-pointer"
+                  onClick={() => onViewCheckIn(project)}
+                >
+                  {getProjectStatusBadge(project.projectStatus)}
+                </td>
+                <td 
+                  className="px-3 py-1.5 cursor-pointer text-center"
+                  onClick={() => onViewCheckIn(project)}
+                >
+                  {getCheckInStatusIcon(project.checkInStatus)}
+                </td>
+                <td 
+                  className="px-3 py-1.5 cursor-pointer"
+                  onClick={() => onViewCheckIn(project)}
+                >
+                  <div className="flex items-center gap-1 text-sm text-amber-600">
+                    <CalendarClock className="w-3.5 h-3.5" />
+                    <span>{getNextDueDate()}</span>
                   </div>
                 </td>
                 <td 
-                  className="px-6 py-4 cursor-pointer"
+                  className="px-3 py-1.5 cursor-pointer text-center"
                   onClick={() => onViewCheckIn(project)}
                 >
-                  {project.weekNumber}-{project.month}-{project.year}
+                  <div className={`w-5 h-5 rounded-full mx-auto ${getRagColor(project.ragStatus)}`} />
                 </td>
-                <td 
-                  className="px-6 py-4 cursor-pointer"
-                  onClick={() => onViewCheckIn(project)}
-                >
-                  <div className={`w-8 h-8 rounded-full ${getRagColor(project.ragStatus)}`} />
-                </td>
-                <td className="px-6 py-4">
+                <td className="px-3 py-1.5 text-center">
                   <div className="relative">
                     <button
                       onClick={() => setOpenDropdown(openDropdown === project.id ? null : project.id)}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                      className="flex items-center justify-center w-7 h-7 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                      title="Check-in"
                     >
-                      Log Weekly Check-in
-                      <ChevronDown className="w-4 h-4" />
+                      <ClipboardEdit className="w-4 h-4" />
                     </button>
                     
                     {openDropdown === project.id && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                      <div className="absolute right-0 mt-1 w-32 bg-white rounded shadow-lg border border-gray-200 z-10">
                         <button
                           onClick={() => {
                             onLogCheckIn(project, 'add');
                             setOpenDropdown(null);
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors"
+                          className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors"
                         >
-                          Add New Check-in
+                          Add New
                         </button>
                         <button
                           onClick={() => {
                             onLogCheckIn(project, 'edit');
                             setOpenDropdown(null);
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-50 border-t transition-colors"
+                          className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 border-t transition-colors"
                         >
-                          Edit Latest Check-in
+                          Edit Latest
                         </button>
                       </div>
                     )}
                   </div>
                 </td>
+                <td className="px-3 py-1.5 text-center">
+                  <button
+                    onClick={() => openEmailPopup(project)}
+                    className="flex items-center justify-center w-7 h-7 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                    title="Send Email"
+                  >
+                    <Mail className="w-4 h-4" />
+                  </button>
+                </td>
               </tr>
+              
+              {/* Expandable History Row */}
+              {expandedProject === project.id && (
+                <tr key={`${project.id}-history`}>
+                  <td colSpan={11} className="bg-slate-50 px-6 py-5 border-b">
+                    <div className="max-w-4xl">
+                      <div className="flex items-center gap-2 mb-4">
+                        <History className="w-4 h-4 text-slate-500" />
+                        <span className="text-sm font-semibold text-slate-700">Check-in History</span>
+                        <span className="text-xs text-slate-400">({checkInHistory[project.id]?.length || 0} entries)</span>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        {checkInHistory[project.id]?.map((history) => (
+                          <div
+                            key={history.id}
+                            className="flex items-center bg-white rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer overflow-hidden"
+                            onClick={() => onViewCheckIn(project)}
+                          >
+                            <div className={`w-1.5 self-stretch ${getRagColor(history.ragStatus)}`} />
+                            <div className="flex items-center gap-6 px-5 py-4 flex-1">
+                              <div className="flex-shrink-0">
+                                <div className="text-sm font-semibold text-slate-700">{history.week}</div>
+                                <div className="text-xs text-slate-400">{history.date}</div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm text-slate-600">{history.highlights}</div>
+                              </div>
+                              <div className="flex-shrink-0 text-right">
+                                <div className="text-xs text-slate-400">Submitted by</div>
+                                <div className="text-sm text-slate-600">{history.submittedBy}</div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {(!checkInHistory[project.id] || checkInHistory[project.id].length === 0) && (
+                          <div className="text-sm text-slate-400 italic py-4 text-center">No check-in history available</div>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+              </>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Email Popup Modal */}
+      {emailProject && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <div className="flex items-center gap-2">
+                <Mail className="w-5 h-5 text-blue-600" />
+                <h3 className="font-medium">Send Status Email</h3>
+              </div>
+              <button
+                onClick={() => setEmailProject(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Project</p>
+                <p className="font-medium">{emailProject.name}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-600 mb-1">To</p>
+                <p className="text-sm">leadership@company.com, stakeholders@company.com</p>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Email Body</label>
+                <textarea
+                  value={emailBody}
+                  onChange={(e) => setEmailBody(e.target.value)}
+                  rows={8}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Paperclip className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm text-gray-600">Attachments</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {attachments.map((file) => (
+                    <div
+                      key={file}
+                      className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-sm"
+                    >
+                      <span>{file}</span>
+                      <button
+                        onClick={() => removeAttachment(file)}
+                        className="text-gray-500 hover:text-red-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <button className="px-2 py-1 border border-dashed border-gray-300 rounded text-sm text-gray-500 hover:border-gray-400">
+                    + Add file
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 px-4 py-3 border-t bg-gray-50">
+              <button
+                onClick={() => setEmailProject(null)}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendEmail}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+              >
+                <Send className="w-4 h-4" />
+                Send Email
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

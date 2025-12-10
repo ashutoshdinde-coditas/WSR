@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { MyProjects } from './components/MyProjects';
 import { WeeklyCheckIn } from './components/WeeklyCheckIn';
 import { Sidebar } from './components/Sidebar';
-import { EmailView } from './components/EmailView';
+import { EmailSettings } from './components/EmailSettings';
 
 export interface Project {
   id: string;
   name: string;
   client: string;
-  status: 'ontime' | 'delayed';
+  startDate: string;
+  endDate: string;
+  checkInStatus: 'done' | 'pending' | 'overdue';
+  projectStatus: 'on-track' | 'off-track' | 'at-risk';
   weekNumber: string;
   month: string;
   year: string;
@@ -23,7 +26,7 @@ export interface Resource {
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<'projects' | 'checkin' | 'email'>('projects');
+  const [currentView, setCurrentView] = useState<'projects' | 'checkin' | 'emailSettings'>('projects');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [checkInMode, setCheckInMode] = useState<'view' | 'edit' | 'add'>('view');
 
@@ -44,7 +47,7 @@ function App() {
     setSelectedProject(null);
   };
 
-  const handleNavigate = (view: 'projects' | 'email') => {
+  const handleNavigate = (view: 'projects' | 'emailSettings') => {
     setCurrentView(view);
     setSelectedProject(null);
   };
@@ -58,8 +61,8 @@ function App() {
             onViewCheckIn={handleViewCheckIn}
             onLogCheckIn={handleLogCheckIn} 
           />
-        ) : currentView === 'email' ? (
-          <EmailView />
+        ) : currentView === 'emailSettings' ? (
+          <EmailSettings />
         ) : (
           <WeeklyCheckIn 
             project={selectedProject!} 
