@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Info, Edit2, Calendar } from 'lucide-react';
+import { ArrowLeft, Info, Edit2, Calendar, Download } from 'lucide-react';
 import { Project, Resource } from '../App';
 import { RAGStatusSelector } from './RAGStatusSelector';
 import { RAIDLog } from './RAIDLog';
@@ -39,14 +39,16 @@ Also requesting early access to production-like data for performance testing.`);
     const monthIndex = months.indexOf(monthName);
     const yearNum = parseInt(yr);
     
-    // Get first day of the month
-    const firstDayOfMonth = new Date(yearNum, monthIndex, 1);
-    const firstWeekDay = firstDayOfMonth.getDay(); // 0 = Sunday
+    // Simple week calculation: Week 1 = days 1-7, Week 2 = days 8-14, etc.
+    const startDay = (weekNumber - 1) * 7 + 1;
+    const endDay = startDay + 6;
     
-    // Calculate start of the week (Sunday-based)
-    const startDay = (weekNumber - 1) * 7 - firstWeekDay + 1;
+    // Get last day of month to cap the end date
+    const lastDayOfMonth = new Date(yearNum, monthIndex + 1, 0).getDate();
+    const cappedEndDay = Math.min(endDay, lastDayOfMonth);
+    
     const startDate = new Date(yearNum, monthIndex, startDay);
-    const endDate = new Date(yearNum, monthIndex, startDay + 6);
+    const endDate = new Date(yearNum, monthIndex, cappedEndDay);
     
     const formatDate = (date: Date) => {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -67,6 +69,10 @@ Also requesting early access to production-like data for performance testing.`);
     setIsEditing(true);
   };
 
+  const handleDownloadPDF = () => {
+    window.print();
+  };
+
   // Months
   const months = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -81,14 +87,12 @@ Also requesting early access to production-like data for performance testing.`);
     const monthIndex = months.indexOf(monthName);
     const yearNum = parseInt(yr);
     
-    // Get first and last day of the month
-    const firstDayOfMonth = new Date(yearNum, monthIndex, 1);
+    // Get last day of the month
     const lastDayOfMonth = new Date(yearNum, monthIndex + 1, 0);
-    
-    // Calculate number of weeks in the month
-    const firstWeekDay = firstDayOfMonth.getDay();
     const totalDays = lastDayOfMonth.getDate();
-    const numWeeks = Math.ceil((totalDays + firstWeekDay) / 7);
+    
+    // Calculate number of weeks (7 days per week)
+    const numWeeks = Math.ceil(totalDays / 7);
     
     // Return array of week numbers (1, 2, 3, 4, 5)
     return Array.from({ length: numWeeks }, (_, i) => String(i + 1));
@@ -116,10 +120,10 @@ Also requesting early access to production-like data for performance testing.`);
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto p-6 print-content">
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 no-print"
       >
         <ArrowLeft className="w-5 h-5" />
         Back to Projects
@@ -135,13 +139,22 @@ Also requesting early access to production-like data for performance testing.`);
             )}
           </div>
           {!isEditing && mode === 'view' && (
-            <button
-              onClick={handleEdit}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              <Edit2 className="w-4 h-4" />
-              Edit
-            </button>
+            <div className="flex items-center gap-2 no-print">
+              <button
+                onClick={handleDownloadPDF}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download PDF
+              </button>
+              <button
+                onClick={handleEdit}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <Edit2 className="w-4 h-4" />
+                Edit
+              </button>
+            </div>
           )}
         </div>
 
@@ -257,7 +270,7 @@ Also requesting early access to production-like data for performance testing.`);
                     onChange={(e) => setRaidEnabled(e.target.checked)}
                     className="w-4 h-4 accent-blue-600 cursor-pointer"
                   />
-                  Enable RAID for this project
+                  Applicable
                 </label>
               )}
             </div>

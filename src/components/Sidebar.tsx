@@ -12,7 +12,7 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 min-h-screen">
+    <div className="w-64 bg-white border-r border-gray-200 min-h-screen no-print">
       <div className="p-6">
         <div className="flex items-center gap-2 mb-8">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">

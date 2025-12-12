@@ -8,7 +8,6 @@ interface MyProjectsProps {
 }
 
 export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [emailProject, setEmailProject] = useState<Project | null>(null);
   const [emailBody, setEmailBody] = useState('');
   const [attachments, setAttachments] = useState<string[]>(['Weekly_Status_Report.pdf']);
@@ -60,19 +59,19 @@ export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
     switch (status) {
       case 'done':
         return (
-          <div className="flex items-center gap-1 text-green-600" title="Check-in Done">
+          <div className="flex items-center justify-center text-green-600" title="Check-in Done">
             <CheckCircle2 className="w-4 h-4" />
           </div>
         );
       case 'pending':
         return (
-          <div className="flex items-center gap-1 text-amber-500" title="Check-in Pending">
+          <div className="flex items-center justify-center text-amber-500" title="Check-in Pending">
             <Clock className="w-4 h-4" />
           </div>
         );
       case 'overdue':
         return (
-          <div className="flex items-center gap-1 text-red-600" title="Check-in Overdue">
+          <div className="flex items-center justify-center text-red-600" title="Check-in Overdue">
             <AlertCircle className="w-4 h-4" />
           </div>
         );
@@ -232,43 +231,18 @@ Project Manager`);
                   <div className={`w-5 h-5 rounded-full mx-auto ${getRagColor(project.ragStatus)}`} />
                 </td>
                 <td className="px-3 py-1.5 text-center">
-                  <div className="relative">
-                    <button
-                      onClick={() => setOpenDropdown(openDropdown === project.id ? null : project.id)}
-                      className="flex items-center justify-center w-7 h-7 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                      title="Check-in"
-                    >
-                      <ClipboardEdit className="w-4 h-4" />
-                    </button>
-                    
-                    {openDropdown === project.id && (
-                      <div className="absolute right-0 mt-1 w-32 bg-white rounded shadow-lg border border-gray-200 z-10">
-                        <button
-                          onClick={() => {
-                            onLogCheckIn(project, 'add');
-                            setOpenDropdown(null);
-                          }}
-                          className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors"
-                        >
-                          Add New
-                        </button>
-                        <button
-                          onClick={() => {
-                            onLogCheckIn(project, 'edit');
-                            setOpenDropdown(null);
-                          }}
-                          className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 border-t transition-colors"
-                        >
-                          Edit Latest
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    onClick={() => onLogCheckIn(project, 'add')}
+                    className="flex items-center justify-center w-7 h-7 mx-auto bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                    title="Check-in"
+                  >
+                    <ClipboardEdit className="w-4 h-4" />
+                  </button>
                 </td>
                 <td className="px-3 py-1.5 text-center">
                   <button
                     onClick={() => openEmailPopup(project)}
-                    className="flex items-center justify-center w-7 h-7 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                    className="flex items-center justify-center w-7 h-7 mx-auto bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
                     title="Send Email"
                   >
                     <Mail className="w-4 h-4" />

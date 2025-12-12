@@ -183,3 +183,52 @@
 html {
   font-size: var(--font-size);
 }
+
+/* Print styles - only show the check-in content */
+@media print {
+  /* Hide elements with no-print class */
+  .no-print {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Make content full width */
+  .print-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+  }
+
+  /* Remove shadows for cleaner print */
+  .bg-white {
+    box-shadow: none !important;
+  }
+
+  /* Reset background for printing */
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Make the main flex container a block */
+  .min-h-screen.bg-gray-50.flex {
+    display: block !important;
+    background: white !important;
+  }
+
+  /* Make flex-1 content full width */
+  .flex-1 {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Hide w-64 sidebar specifically */
+  .w-64 {
+    display: none !important;
+  }
+}
