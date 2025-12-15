@@ -33,28 +33,44 @@ export function WeeklyCheckIn({ project, onBack, mode }: WeeklyCheckInProps) {
 Also requesting early access to production-like data for performance testing.`);
   const [raidEnabled, setRaidEnabled] = useState(true);
 
-  // Calculate week date range from week number, month, and year
+  // Calculate week date range based on calendar rows (Monday to Sunday)
+  // Week 1 = first row of the month's calendar (may include days from prev month)
   const getWeekDateRange = (weekNum: string, monthName: string, yr: string) => {
     const weekNumber = parseInt(weekNum);
     const monthIndex = months.indexOf(monthName);
     const yearNum = parseInt(yr);
     
-    // Simple week calculation: Week 1 = days 1-7, Week 2 = days 8-14, etc.
-    const startDay = (weekNumber - 1) * 7 + 1;
-    const endDay = startDay + 6;
+    // Get the first day of the month
+    const firstDayOfMonth = new Date(yearNum, monthIndex, 1);
     
-    // Get last day of month to cap the end date
-    const lastDayOfMonth = new Date(yearNum, monthIndex + 1, 0).getDate();
-    const cappedEndDay = Math.min(endDay, lastDayOfMonth);
+    // Find the start of the calendar week containing the 1st (go back to Monday)
+    // getDay(): 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    // Convert to Monday-based: Monday = 0, Tuesday = 1, ..., Sunday = 6
+    const dayOfWeek = firstDayOfMonth.getDay();
+    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday becomes 6, Monday becomes 0
+    const calendarStart = new Date(firstDayOfMonth);
+    calendarStart.setDate(1 - daysFromMonday); // Go back to Monday of that week
     
-    const startDate = new Date(yearNum, monthIndex, startDay);
-    const endDate = new Date(yearNum, monthIndex, cappedEndDay);
+    // Calculate the start of the requested week row
+    const startDate = new Date(calendarStart);
+    startDate.setDate(calendarStart.getDate() + (weekNumber - 1) * 7);
+    
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6); // End on Sunday
     
     const formatDate = (date: Date) => {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
     
-    return `${formatDate(startDate)} - ${formatDate(endDate)}, ${yr}`;
+    // Check if week spans across years
+    const startYear = startDate.getFullYear();
+    const endYear = endDate.getFullYear();
+    
+    if (startYear !== endYear) {
+      return `${formatDate(startDate)}, ${startYear} - ${formatDate(endDate)}, ${endYear}`;
+    }
+    
+    return `${formatDate(startDate)} - ${formatDate(endDate)}, ${startYear}`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -82,19 +98,32 @@ Also requesting early access to production-like data for performance testing.`);
   // Years (current year and next year)
   const years = ['2024', '2025', '2026'];
 
-  // Get number of weeks in a month (typically 4-5)
+  // Get number of calendar rows (weeks) for a month (Monday to Sunday)
   const getWeeksForMonth = (monthName: string, yr: string) => {
     const monthIndex = months.indexOf(monthName);
     const yearNum = parseInt(yr);
     
-    // Get last day of the month
+    // Get first and last day of the month
+    const firstDayOfMonth = new Date(yearNum, monthIndex, 1);
     const lastDayOfMonth = new Date(yearNum, monthIndex + 1, 0);
-    const totalDays = lastDayOfMonth.getDate();
     
-    // Calculate number of weeks (7 days per week)
+    // Find the start of the calendar (Monday of the week containing the 1st)
+    const firstDayOfWeek = firstDayOfMonth.getDay();
+    const daysFromMonday = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+    const calendarStart = new Date(firstDayOfMonth);
+    calendarStart.setDate(1 - daysFromMonday);
+    
+    // Find the end of the calendar (Sunday of the week containing the last day)
+    const lastDayOfWeek = lastDayOfMonth.getDay();
+    const daysToSunday = lastDayOfWeek === 0 ? 0 : 7 - lastDayOfWeek;
+    const calendarEnd = new Date(lastDayOfMonth);
+    calendarEnd.setDate(lastDayOfMonth.getDate() + daysToSunday);
+    
+    // Calculate number of weeks (calendar rows)
+    const totalDays = Math.round((calendarEnd.getTime() - calendarStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     const numWeeks = Math.ceil(totalDays / 7);
     
-    // Return array of week numbers (1, 2, 3, 4, 5)
+    // Return array of week numbers (1, 2, 3, 4, 5, 6)
     return Array.from({ length: numWeeks }, (_, i) => String(i + 1));
   };
 

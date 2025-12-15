@@ -9,6 +9,7 @@ interface MyProjectsProps {
 
 export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
   const [emailProject, setEmailProject] = useState<Project | null>(null);
+  const [emailTo, setEmailTo] = useState('');
   const [emailBody, setEmailBody] = useState('');
   const [attachments, setAttachments] = useState<string[]>(['Weekly_Status_Report.pdf']);
 
@@ -131,6 +132,7 @@ export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
 
   const openEmailPopup = (project: Project) => {
     setEmailProject(project);
+    setEmailTo('leadership@company.com, stakeholders@company.com');
     setEmailBody(`Hi Team,
 
 Please find below the weekly status update for ${project.name}.
@@ -278,8 +280,14 @@ Project Manager`);
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-1">To</p>
-                <p className="text-sm">leadership@company.com, stakeholders@company.com</p>
+                <label className="block text-sm text-gray-600 mb-1">To</label>
+                <input
+                  type="text"
+                  value={emailTo}
+                  onChange={(e) => setEmailTo(e.target.value)}
+                  placeholder="Enter recipient emails (comma-separated)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
 
               <div>
