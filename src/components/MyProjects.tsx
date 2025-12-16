@@ -1,18 +1,11 @@
-import { CheckCircle2, Clock, AlertCircle, ClipboardEdit, Mail, X, Send, Paperclip, CalendarClock } from 'lucide-react';
+import { CheckCircle2, Clock, AlertCircle, CalendarClock } from 'lucide-react';
 import { Project } from '../App';
-import { useState } from 'react';
 
 interface MyProjectsProps {
-  onViewCheckIn: (project: Project) => void;
-  onLogCheckIn: (project: Project, mode: 'add' | 'edit') => void;
+  onViewProject: (project: Project) => void;
 }
 
-export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
-  const [emailProject, setEmailProject] = useState<Project | null>(null);
-  const [emailTo, setEmailTo] = useState('');
-  const [emailBody, setEmailBody] = useState('');
-  const [attachments, setAttachments] = useState<string[]>(['Weekly_Status_Report.pdf']);
-
+export function MyProjects({ onViewProject }: MyProjectsProps) {
   // Mock data for currently allocated projects
   const projects: Project[] = [
     {
@@ -130,31 +123,6 @@ export function MyProjects({ onViewCheckIn, onLogCheckIn }: MyProjectsProps) {
     });
   };
 
-  const openEmailPopup = (project: Project) => {
-    setEmailProject(project);
-    setEmailTo('leadership@company.com, stakeholders@company.com');
-    setEmailBody(`Hi Team,
-
-Please find below the weekly status update for ${project.name}.
-
-Project Status: ${project.projectStatus === 'on-track' ? 'On Track' : project.projectStatus === 'at-risk' ? 'At Risk' : 'Off Track'}
-Health Status: ${project.ragStatus.charAt(0).toUpperCase() + project.ragStatus.slice(1)}
-Week: ${project.weekNumber}
-
-Best regards,
-Project Manager`);
-  };
-
-  const handleSendEmail = () => {
-    alert(`Email sent for ${emailProject?.name}!`);
-    setEmailProject(null);
-    setEmailBody('');
-  };
-
-  const removeAttachment = (name: string) => {
-    setAttachments(attachments.filter(a => a !== name));
-  };
-
   return (
     <div className="max-w-7xl mx-auto p-4">
       <div className="mb-4">
@@ -174,177 +142,47 @@ Project Manager`);
               <th className="text-center px-3 py-1.5 text-sm font-medium">Check-In</th>
               <th className="text-left px-3 py-1.5 text-sm font-medium">Next Due</th>
               <th className="text-center px-3 py-1.5 text-sm font-medium">Health Status</th>
-              <th className="text-center px-3 py-1.5 text-sm font-medium">Actions</th>
-              <th className="text-center px-3 py-1.5 text-sm font-medium">Email</th>
             </tr>
           </thead>
           <tbody>
             {projects.map((project) => (
-              <tr key={project.id} className="border-b hover:bg-gray-50">
-                <td 
-                  className="px-3 py-1.5 cursor-pointer text-sm font-medium"
-                  onClick={() => onViewCheckIn(project)}
-                >
+              <tr 
+                key={project.id} 
+                className="border-b hover:bg-gray-50 cursor-pointer"
+                onClick={() => onViewProject(project)}
+              >
+                <td className="px-3 py-1.5 text-sm font-medium">
                   {project.name}
                 </td>
-                <td 
-                  className="px-3 py-1.5 cursor-pointer text-sm"
-                  onClick={() => onViewCheckIn(project)}
-                >
+                <td className="px-3 py-1.5 text-sm">
                   {project.client}
                 </td>
-                <td 
-                  className="px-3 py-1.5 cursor-pointer text-sm text-gray-600"
-                  onClick={() => onViewCheckIn(project)}
-                >
+                <td className="px-3 py-1.5 text-sm text-gray-600">
                   {project.startDate}
                 </td>
-                <td 
-                  className="px-3 py-1.5 cursor-pointer text-sm text-gray-600"
-                  onClick={() => onViewCheckIn(project)}
-                >
+                <td className="px-3 py-1.5 text-sm text-gray-600">
                   {project.endDate}
                 </td>
-                <td 
-                  className="px-3 py-1.5 cursor-pointer"
-                  onClick={() => onViewCheckIn(project)}
-                >
+                <td className="px-3 py-1.5">
                   {getProjectStatusBadge(project.projectStatus)}
                 </td>
-                <td 
-                  className="px-3 py-1.5 cursor-pointer text-center"
-                  onClick={() => onViewCheckIn(project)}
-                >
+                <td className="px-3 py-1.5 text-center">
                   {getCheckInStatusIcon(project.checkInStatus)}
                 </td>
-                <td 
-                  className="px-3 py-1.5 cursor-pointer"
-                  onClick={() => onViewCheckIn(project)}
-                >
+                <td className="px-3 py-1.5">
                   <div className="flex items-center gap-1 text-sm text-amber-600">
                     <CalendarClock className="w-3.5 h-3.5" />
                     <span>{getNextDueDate()}</span>
                   </div>
                 </td>
-                <td 
-                  className="px-3 py-1.5 cursor-pointer text-center"
-                  onClick={() => onViewCheckIn(project)}
-                >
+                <td className="px-3 py-1.5 text-center">
                   <div className={`w-5 h-5 rounded-full mx-auto ${getRagColor(project.ragStatus)}`} />
-                </td>
-                <td className="px-3 py-1.5 text-center">
-                  <button
-                    onClick={() => onLogCheckIn(project, 'add')}
-                    className="flex items-center justify-center w-7 h-7 mx-auto bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                    title="Check-in"
-                  >
-                    <ClipboardEdit className="w-4 h-4" />
-                  </button>
-                </td>
-                <td className="px-3 py-1.5 text-center">
-                  <button
-                    onClick={() => openEmailPopup(project)}
-                    className="flex items-center justify-center w-7 h-7 mx-auto bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                    title="Send Email"
-                  >
-                    <Mail className="w-4 h-4" />
-                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      {/* Email Popup Modal */}
-      {emailProject && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
-            <div className="flex items-center justify-between px-4 py-3 border-b">
-              <div className="flex items-center gap-2">
-                <Mail className="w-5 h-5 text-blue-600" />
-                <h3 className="font-medium">Send Status Email</h3>
-              </div>
-              <button
-                onClick={() => setEmailProject(null)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-4 space-y-4">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Project</p>
-                <p className="font-medium">{emailProject.name}</p>
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">To</label>
-                <input
-                  type="text"
-                  value={emailTo}
-                  onChange={(e) => setEmailTo(e.target.value)}
-                  placeholder="Enter recipient emails (comma-separated)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Email Body</label>
-                <textarea
-                  value={emailBody}
-                  onChange={(e) => setEmailBody(e.target.value)}
-                  rows={8}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Paperclip className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">Attachments</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {attachments.map((file) => (
-                    <div
-                      key={file}
-                      className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-sm"
-                    >
-                      <span>{file}</span>
-                      <button
-                        onClick={() => removeAttachment(file)}
-                        className="text-gray-500 hover:text-red-600"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                  <button className="px-2 py-1 border border-dashed border-gray-300 rounded text-sm text-gray-500 hover:border-gray-400">
-                    + Add file
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 px-4 py-3 border-t bg-gray-50">
-              <button
-                onClick={() => setEmailProject(null)}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSendEmail}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-              >
-                <Send className="w-4 h-4" />
-                Send Email
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

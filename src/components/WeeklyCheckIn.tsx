@@ -13,25 +13,37 @@ interface WeeklyCheckInProps {
 
 export function WeeklyCheckIn({ project, onBack, mode }: WeeklyCheckInProps) {
   const [isEditing, setIsEditing] = useState(mode !== 'view');
+  
+  // Get current month and year for new WSR
+  const currentDate = new Date();
+  const currentMonthIndex = currentDate.getMonth();
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const currentMonth = monthNames[currentMonthIndex];
+  const currentYear = String(currentDate.getFullYear());
+  
+  // For 'add' mode, start with blank/default values
+  // For 'view' or 'edit' mode, use existing data (mock data for now)
+  const isAddMode = mode === 'add';
+  
   const [weekNumber, setWeekNumber] = useState('1');
-  const [month, setMonth] = useState('Dec');
-  const [year, setYear] = useState('2025');
-  const [ragStatus, setRagStatus] = useState<'red' | 'amber' | 'green'>('amber');
-  const [updateHighlights, setUpdateHighlights] = useState(`• Successfully completed the user authentication module with OAuth integration
+  const [month, setMonth] = useState(isAddMode ? currentMonth : 'Dec');
+  const [year, setYear] = useState(isAddMode ? currentYear : '2025');
+  const [ragStatus, setRagStatus] = useState<'red' | 'amber' | 'green'>(isAddMode ? 'green' : 'amber');
+  const [updateHighlights, setUpdateHighlights] = useState(isAddMode ? '' : `• Successfully completed the user authentication module with OAuth integration
 • Design team finalized the new dashboard mockups and received stakeholder approval
 • Backend API development is 70% complete, on track for end-of-month delivery
 • Conducted user testing sessions with 15 participants, feedback overall positive`);
-  const [completedMilestones, setCompletedMilestones] = useState(`• User Authentication Module - Completed on Dec 5
+  const [completedMilestones, setCompletedMilestones] = useState(isAddMode ? '' : `• User Authentication Module - Completed on Dec 5
 • Dashboard Design Approval - Completed on Dec 7
 • Phase 1 API Endpoints - Completed on Dec 8`);
-  const [plannedMilestones, setPlannedMilestones] = useState(`• Complete remaining API endpoints by Dec 15
+  const [plannedMilestones, setPlannedMilestones] = useState(isAddMode ? '' : `• Complete remaining API endpoints by Dec 15
 • Begin frontend integration with backend services by Dec 16
 • Conduct security audit and penetration testing by Dec 18
 • Prepare staging environment for UAT by Dec 20`);
-  const [comments, setComments] = useState(`Need additional QA resources for the upcoming testing phase. The current team member is allocated at 75% which may not be sufficient given the scope of testing required.
+  const [comments, setComments] = useState(isAddMode ? '' : `Need additional QA resources for the upcoming testing phase. The current team member is allocated at 75% which may not be sufficient given the scope of testing required.
 
 Also requesting early access to production-like data for performance testing.`);
-  const [raidEnabled, setRaidEnabled] = useState(true);
+  const [raidEnabled, setRaidEnabled] = useState(isAddMode ? false : true);
 
   // Calculate week date range based on calendar rows (Monday to Sunday)
   // Week 1 = first row of the month's calendar (may include days from prev month)
@@ -155,13 +167,13 @@ Also requesting early access to production-like data for performance testing.`);
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 no-print"
       >
         <ArrowLeft className="w-5 h-5" />
-        Back to Projects
+        Back to Project
       </button>
 
       <div className="bg-white rounded-lg shadow p-8">
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-3xl mb-2">Weekly Check-in</h1>
+            <h1 className="text-3xl mb-2">{mode === 'add' ? 'New Weekly Check-in' : 'Weekly Check-in'}</h1>
             <p className="text-gray-600">{project.name}</p>
             {mode === 'view' && (
               <p className="text-sm text-gray-500 mt-1">Last updated: Dec 8, 2025</p>

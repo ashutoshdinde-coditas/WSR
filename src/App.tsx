@@ -3,6 +3,7 @@ import { MyProjects } from './components/MyProjects';
 import { WeeklyCheckIn } from './components/WeeklyCheckIn';
 import { Sidebar } from './components/Sidebar';
 import { EmailSettings } from './components/EmailSettings';
+import { ProjectDetails, WSREntry } from './components/ProjectDetails';
 
 export interface Project {
   id: string;
@@ -26,25 +27,37 @@ export interface Resource {
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<'projects' | 'checkin' | 'emailSettings'>('projects');
+  const [currentView, setCurrentView] = useState<'projects' | 'projectDetails' | 'checkin' | 'emailSettings'>('projects');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [checkInMode, setCheckInMode] = useState<'view' | 'edit' | 'add'>('view');
 
-  const handleViewCheckIn = (project: Project) => {
+  const handleViewProject = (project: Project) => {
     setSelectedProject(project);
+    setCurrentView('projectDetails');
+  };
+
+  const handleViewWSR = (wsr: WSREntry) => {
     setCheckInMode('view');
     setCurrentView('checkin');
   };
 
-  const handleLogCheckIn = (project: Project, mode: 'add' | 'edit') => {
-    setSelectedProject(project);
-    setCheckInMode(mode);
+  const handleEditWSR = (wsr: WSREntry) => {
+    setCheckInMode('edit');
+    setCurrentView('checkin');
+  };
+
+  const handleAddWSR = () => {
+    setCheckInMode('add');
     setCurrentView('checkin');
   };
 
   const handleBackToProjects = () => {
     setCurrentView('projects');
     setSelectedProject(null);
+  };
+
+  const handleBackToProjectDetails = () => {
+    setCurrentView('projectDetails');
   };
 
   const handleNavigate = (view: 'projects' | 'emailSettings') => {
@@ -57,16 +70,21 @@ function App() {
       <Sidebar currentView={currentView} onNavigate={handleNavigate} />
       <div className="flex-1">
         {currentView === 'projects' ? (
-          <MyProjects 
-            onViewCheckIn={handleViewCheckIn}
-            onLogCheckIn={handleLogCheckIn} 
+          <MyProjects onViewProject={handleViewProject} />
+        ) : currentView === 'projectDetails' && selectedProject ? (
+          <ProjectDetails
+            project={selectedProject}
+            onBack={handleBackToProjects}
+            onViewWSR={handleViewWSR}
+            onEditWSR={handleEditWSR}
+            onAddWSR={handleAddWSR}
           />
         ) : currentView === 'emailSettings' ? (
           <EmailSettings />
         ) : (
           <WeeklyCheckIn 
             project={selectedProject!} 
-            onBack={handleBackToProjects}
+            onBack={handleBackToProjectDetails}
             mode={checkInMode}
           />
         )}

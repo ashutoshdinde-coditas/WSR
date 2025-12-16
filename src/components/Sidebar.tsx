@@ -25,7 +25,7 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id || 
-                           (currentView === 'checkin' && item.id === 'projects');
+                           ((currentView === 'checkin' || currentView === 'projectDetails') && item.id === 'projects');
             
             return (
               <button
